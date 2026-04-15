@@ -7,17 +7,10 @@ export default async function handler(req, res) {
 
   const { licenseKey } = req.body;
 
-  const response = await fetch(`https://live.dodopayments.com/v1/licenses/validate`, {
+  const response = await fetch("https://live.dodopayments.com/licenses/validate", {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.DODO_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      license_key: licenseKey,
-      device_fingerprint: "extension",
-      name: "Chrome Extension"
-    })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ license_key: licenseKey })
   });
 
   const data = await response.json();
