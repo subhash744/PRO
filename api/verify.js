@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   const { licenseKey } = req.body;
 
-  const response = await fetch(`https://api.dodopayments.com/licenses/activate`, {
+  const response = await fetch(`https://live.dodopayments.com/v1/licenses/validate`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${process.env.DODO_API_KEY}`,
