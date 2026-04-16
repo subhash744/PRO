@@ -15,8 +15,9 @@ export default async function handler(req, res) {
 
   const data = await response.json();
 
-  // Log what Dodo actually returns so we can see the real structure
-  console.log("Dodo response:", JSON.stringify(data));
-
-  res.status(200).json({ valid: false, raw: data });
+  if (data.valid === true) {
+    res.status(200).json({ valid: true });
+  } else {
+    res.status(200).json({ valid: false });
+  }
 }
