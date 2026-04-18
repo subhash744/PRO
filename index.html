@@ -1,6 +1,1008 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Prompt Autocomplete — Type Less, Do More on Every AI Tool</title>
+  <meta name="description" content="Save your best prompts once. Prompt Autocomplete shows them instantly as you type — across every major AI chatbot and coding assistant. Free Chrome extension." />
+  <meta name="keywords" content="AI prompt autocomplete, autocomplete for AI tools, AI chatbot productivity, Chrome extension for AI, save and reuse prompts, prompt shortcuts, AI workflow extension" />
+  <link rel="canonical" href="https://promptautocomplete.vercel.app/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://promptautocomplete.vercel.app/" />
+  <meta property="og:title" content="Prompt Autocomplete — Instant Prompt Suggestions on Every AI Tool" />
+  <meta property="og:description" content="Stop retyping the same prompts. Prompt Autocomplete brings your saved prompts back the moment you start typing — on 50+ AI tools." />
+  <meta property="og:image" content="https://promptautocomplete.vercel.app/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Prompt Autocomplete — Type Less on Every AI Tool" />
+  <meta name="twitter:description" content="Your prompts appear as you type. Free Chrome extension. Works on 50+ AI tools." />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Prompt Autocomplete",
+    "operatingSystem": "Chrome",
+    "applicationCategory": "BrowserApplication",
+    "applicationSubCategory": "Productivity",
+    "offers": [
+      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free — up to 25 prompts" },
+      { "@type": "Offer", "price": "6.00", "priceCurrency": "USD", "description": "Pro — unlimited prompts, one-time" }
+    ],
+    "description": "Prompt Autocomplete is a Chrome extension that shows your saved AI prompts as you type, across every major AI chatbot and coding assistant.",
+    "url": "https://promptautocomplete.vercel.app/",
+    "downloadUrl": "https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe",
+    "softwareVersion": "3.1.1",
+    "featureList": [
+      "Autocomplete prompts while typing",
+      "Works on 50+ AI tools and chatbots",
+      "Save prompts once, reuse everywhere",
+      "Slash command shortcuts",
+      "Prompt history navigator",
+      "Tag and organize prompts",
+      "Works offline — local storage only"
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Which AI tools does Prompt Autocomplete work on?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Prompt Autocomplete works on 50+ AI tools including every major AI chatbot, coding assistant, and image generation platform available in Chrome." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Prompt Autocomplete free?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The free tier lets you save up to 25 prompts and works on all supported sites. Pro ($6 one-time) unlocks unlimited prompts." }
+      },
+      {
+        "@type": "Question",
+        "name": "Where are my prompts stored?",
+        "acceptedAnswer": { "@type": "Answer", "text": "All prompts are stored locally in your browser. Nothing is sent to any server. Your data stays on your device." }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the prompt autocomplete work?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Once installed, the extension watches your typing in any AI chat input. When you start typing, it shows a dropdown of matching saved prompts. Click to insert instantly." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it work across different AI tools?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Prompts you save work across every supported AI tool. Switch between chatbots and your prompts follow you everywhere." }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:        #faf9f7;
+      --bg2:       #f4f2ee;
+      --surface:   #ffffff;
+      --border:    #e8e4dd;
+      --border2:   #d8d3cb;
+      --text:      #1a1714;
+      --body:      #3d3830;
+      --muted:     #7a7368;
+      --accent:    #2563eb;
+      --accent-bg: #eff6ff;
+      --accent-dk: #1d4ed8;
+      --green:     #16a34a;
+      --font-head: 'Montserrat', sans-serif;
+      --font-body: 'Lora', serif;
+      --r:         8px;
+      --r-lg:      14px;
+      --shadow-lg: 0 2px 8px rgba(0,0,0,0.06), 0 16px 48px rgba(0,0,0,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--body);
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+    section { padding: 88px 0; }
+
+    /* NAV */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner {
+      max-width: 960px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 62px;
+    }
+    .nav-logo {
+      font-family: var(--font-head);
+      font-weight: 800; font-size: 15px;
+      letter-spacing: -0.02em; color: var(--text);
+      display: flex; align-items: center; gap: 9px;
+    }
+    .logo-mark {
+      width: 30px; height: 30px;
+      background: var(--accent); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      font-family: var(--font-head);
+      font-size: 13px; font-weight: 600;
+      color: var(--muted); letter-spacing: 0.01em;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      font-family: var(--font-head);
+      font-weight: 700; font-size: 13px;
+      background: var(--accent); color: #fff;
+      padding: 9px 20px; border-radius: var(--r);
+      transition: background 0.15s, transform 0.15s;
+    }
+    .nav-cta:hover { background: var(--accent-dk); transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      padding: 80px 0 72px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-inner {
+      max-width: 960px; margin: 0 auto; padding: 0 28px;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 64px; align-items: center;
+    }
+    .hero-label {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-head);
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent);
+      background: var(--accent-bg);
+      border: 1px solid #bfdbfe;
+      padding: 5px 12px; border-radius: 999px;
+      margin-bottom: 24px;
+    }
+    .label-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%; background: var(--accent);
+    }
+    h1 {
+      font-family: var(--font-head);
+      font-size: clamp(34px, 4.5vw, 52px);
+      font-weight: 900;
+      line-height: 1.08; letter-spacing: -0.03em;
+      color: var(--text); margin-bottom: 22px;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+    .hero-desc {
+      font-family: var(--font-body);
+      font-size: 18px; color: var(--body);
+      line-height: 1.7; margin-bottom: 36px;
+    }
+    .hero-desc strong { color: var(--text); font-weight: 500; }
+    .hero-actions {
+      display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap; margin-bottom: 32px;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent); color: #fff;
+      font-family: var(--font-head);
+      font-weight: 700; font-size: 14px;
+      padding: 13px 24px; border-radius: var(--r);
+      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+      transition: all 0.15s;
+    }
+    .btn-primary:hover {
+      background: var(--accent-dk);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+    }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-head);
+      font-weight: 600; font-size: 14px;
+      color: var(--muted); transition: color 0.15s;
+    }
+    .btn-ghost:hover { color: var(--text); }
+    .hero-trust { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .trust-chip {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-head);
+      font-size: 12px; font-weight: 600; color: var(--muted);
+    }
+
+    /* DEMO */
+    .demo-window {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .demo-topbar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .d-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .d-dot:nth-child(1) { background: #fc5f57; }
+    .d-dot:nth-child(2) { background: #fdbb2e; }
+    .d-dot:nth-child(3) { background: #27c93f; }
+    .demo-url-bar {
+      flex: 1; text-align: center;
+      font-family: var(--font-head);
+      font-size: 11px; color: var(--muted); font-weight: 500;
+    }
+    .demo-body { padding: 18px; }
+    .demo-site {
+      font-family: var(--font-head);
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .demo-input-box {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-family: var(--font-body);
+      font-size: 14px; color: var(--text);
+    }
+    .demo-cursor {
+      display: inline-block;
+      width: 2px; height: 15px;
+      background: var(--accent);
+      vertical-align: middle; margin-left: 1px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .demo-dropdown {
+      margin-top: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+    }
+    .demo-row {
+      padding: 9px 14px;
+      font-size: 13px; font-family: var(--font-head); font-weight: 500;
+      color: var(--body);
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .demo-row:last-child { border-bottom: none; }
+    .demo-row.active { background: var(--accent-bg); color: var(--accent); }
+    .demo-tag {
+      font-size: 10px; font-weight: 700;
+      background: var(--bg2); color: var(--muted);
+      padding: 2px 7px; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0;
+    }
+    .demo-row.active .demo-tag { background: #dbeafe; color: var(--accent); }
+    .demo-keys {
+      margin-top: 10px;
+      display: flex; gap: 8px; align-items: center;
+      font-family: var(--font-head);
+      font-size: 11px; color: var(--muted); font-weight: 500;
+    }
+    kbd {
+      background: var(--bg2); border: 1px solid var(--border2);
+      padding: 1px 6px; border-radius: 4px;
+      font-size: 10px; font-family: var(--font-head);
+      font-weight: 600; color: var(--body);
+    }
+
+    /* TRUST BAR */
+    .trustbar {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .trustbar-inner {
+      max-width: 960px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 40px; flex-wrap: wrap;
+    }
+    .tb-item {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-head);
+      font-size: 12px; font-weight: 600; color: var(--muted);
+    }
+
+    /* SECTION LABELS */
+    .eyebrow {
+      font-family: var(--font-head);
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--accent); margin-bottom: 14px;
+    }
+    h2 {
+      font-family: var(--font-head);
+      font-size: clamp(26px, 3.5vw, 40px);
+      font-weight: 800; letter-spacing: -0.03em;
+      color: var(--text); line-height: 1.12; margin-bottom: 16px;
+    }
+    .lead {
+      font-family: var(--font-body);
+      font-size: 18px; color: var(--muted);
+      max-width: 520px; line-height: 1.7;
+    }
+
+    /* HOW IT WORKS */
+    .how-section { background: var(--surface); border-bottom: 1px solid var(--border); }
+    .steps {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0; margin-top: 52px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg); overflow: hidden;
+    }
+    .step {
+      padding: 36px 30px;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .step:last-child { border-right: none; }
+    .step-num {
+      font-family: var(--font-head);
+      font-size: 11px; font-weight: 800;
+      color: var(--accent); letter-spacing: 0.08em; margin-bottom: 18px;
+    }
+    .step-icon { font-size: 26px; margin-bottom: 16px; display: block; }
+    .step h3 {
+      font-family: var(--font-head);
+      font-size: 16px; font-weight: 800;
+      letter-spacing: -0.02em; color: var(--text); margin-bottom: 10px;
+    }
+    .step p { font-family: var(--font-body); font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* FEATURES */
+    .features-section { background: var(--bg); border-bottom: 1px solid var(--border); }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; margin-top: 52px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg); overflow: hidden;
+    }
+    .feat {
+      padding: 30px 26px;
+      background: var(--surface);
+      transition: background 0.15s;
+    }
+    .feat:hover { background: var(--bg); }
+    .feat-icon { font-size: 22px; margin-bottom: 14px; }
+    .feat h3 {
+      font-family: var(--font-head);
+      font-size: 15px; font-weight: 800;
+      letter-spacing: -0.02em; color: var(--text); margin-bottom: 8px;
+    }
+    .feat p { font-family: var(--font-body); font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    /* SITES */
+    .sites-section {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    .big-number {
+      font-family: var(--font-head);
+      font-size: clamp(72px, 12vw, 128px);
+      font-weight: 900; letter-spacing: -0.05em;
+      color: var(--text); line-height: 1; margin-bottom: 4px;
+    }
+    .big-label {
+      font-family: var(--font-head);
+      font-size: 16px; font-weight: 600;
+      color: var(--muted); margin-bottom: 44px;
+    }
+    .sites-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      justify-content: center;
+      max-width: 680px; margin: 0 auto 36px;
+    }
+    .site-pill {
+      font-family: var(--font-head);
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border2);
+      background: var(--surface); color: var(--muted);
+      padding: 5px 14px; border-radius: 999px;
+      transition: all 0.15s;
+    }
+    .site-pill:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .site-pill.hi { background: var(--bg2); color: var(--body); border-color: var(--border2); }
+    .sites-note { font-family: var(--font-head); font-size: 13px; color: var(--muted); font-weight: 500; }
+
+    /* PRICING */
+    .pricing-section { background: var(--bg); border-bottom: 1px solid var(--border); text-align: center; }
+    .pricing-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px; max-width: 680px; margin: 52px auto 0; text-align: left;
+    }
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 34px 28px;
+    }
+    .pricing-card.pro { border: 2px solid var(--accent); position: relative; }
+    .pro-badge {
+      position: absolute; top: -13px; left: 24px;
+      background: var(--accent); color: #fff;
+      font-family: var(--font-head);
+      font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 3px 12px; border-radius: 999px;
+    }
+    .tier-name {
+      font-family: var(--font-head);
+      font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .price-big {
+      font-family: var(--font-head);
+      font-size: 52px; font-weight: 900;
+      letter-spacing: -0.04em; color: var(--text);
+      line-height: 1; margin-bottom: 4px;
+    }
+    .price-note {
+      font-family: var(--font-head);
+      font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 26px;
+    }
+    .price-features { list-style: none; margin-bottom: 28px; }
+    .price-features li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-family: var(--font-body);
+      font-size: 14px; color: var(--body);
+      margin-bottom: 11px; line-height: 1.5;
+    }
+    .chk { color: var(--green); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .price-btn {
+      display: block; width: 100%; text-align: center;
+      font-family: var(--font-head);
+      font-weight: 700; font-size: 14px;
+      padding: 12px; border-radius: var(--r);
+      transition: all 0.15s; letter-spacing: 0.01em;
+    }
+    .price-btn.free { border: 1px solid var(--border2); background: transparent; color: var(--body); }
+    .price-btn.free:hover { border-color: var(--accent); color: var(--accent); }
+    .price-btn.pro-btn {
+      background: var(--accent); color: #fff;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+    }
+    .price-btn.pro-btn:hover {
+      background: var(--accent-dk);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+    }
+    .pricing-footnote {
+      font-family: var(--font-head);
+      font-size: 12px; color: var(--muted); font-weight: 500;
+      margin-top: 20px; text-align: center;
+    }
+
+    /* FAQ */
+    .faq-section { background: var(--surface); border-bottom: 1px solid var(--border); }
+    .faq-list { max-width: 660px; margin-top: 52px; }
+    details { border-bottom: 1px solid var(--border); }
+    details:first-child { border-top: 1px solid var(--border); }
+    summary {
+      padding: 22px 0; cursor: pointer; list-style: none;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-head);
+      font-size: 16px; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--text); gap: 16px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; font-size: 20px; font-weight: 400; color: var(--muted); flex-shrink: 0; }
+    details[open] summary::after { content: '−'; }
+    .faq-ans {
+      padding-bottom: 22px;
+      font-family: var(--font-body);
+      font-size: 15px; color: var(--muted); line-height: 1.75; max-width: 560px;
+    }
+
+    /* FINAL CTA */
+    .cta-section { background: var(--text); text-align: center; padding: 96px 0; }
+    .cta-section .eyebrow { color: #93c5fd; }
+    .cta-section h2 { color: #fff; font-size: clamp(28px, 4vw, 46px); margin-bottom: 16px; }
+    .cta-section p {
+      font-family: var(--font-body); font-size: 18px; color: #94a3b8;
+      max-width: 440px; margin: 0 auto 40px; line-height: 1.7;
+    }
+    .cta-chips {
+      display: flex; justify-content: center; gap: 24px;
+      flex-wrap: wrap; margin-top: 32px;
+    }
+    .cta-chip {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--font-head);
+      font-size: 12px; font-weight: 600; color: #64748b;
+    }
+
+    /* FOOTER */
+    footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 28px 0; }
+    .footer-inner {
+      max-width: 960px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-family: var(--font-head); font-size: 14px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .footer-links { display: flex; gap: 28px; }
+    .footer-links a {
+      font-family: var(--font-head); font-size: 12px; font-weight: 600;
+      color: var(--muted); transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-family: var(--font-head); font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-label   { animation: fadeUp 0.4s ease both; }
+    h1            { animation: fadeUp 0.4s 0.08s ease both; }
+    .hero-desc    { animation: fadeUp 0.4s 0.14s ease both; }
+    .hero-actions { animation: fadeUp 0.4s 0.2s ease both; }
+    .hero-trust   { animation: fadeUp 0.4s 0.26s ease both; }
+    .demo-window  { animation: fadeUp 0.5s 0.1s ease both; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+      .steps { grid-template-columns: 1fr; }
+      .step { border-right: none; border-bottom: 1px solid var(--border); }
+      .step:last-child { border-bottom: none; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      section { padding: 64px 0; }
+    }
+    @media (max-width: 520px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
 <body>
-<h1>OK</h1>
+
+<!-- NAV -->
+<nav aria-label="Main navigation">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="logo-mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 8h5M2 5h8M2 11h3" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="8" r="2.5" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+      </div>
+      Prompt Autocomplete
+    </div>
+    <div class="nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
+       class="nav-cta" rel="noopener" aria-label="Add Prompt Autocomplete to Chrome for free">
+      Add to Chrome — Free
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" role="banner">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-label">
+        <div class="label-dot" aria-hidden="true"></div>
+        Chrome Extension · 50+ AI Tools
+      </div>
+
+      <h1>Your prompts appear<br /><em>as you type.</em></h1>
+
+      <p class="hero-desc">
+        Save your best prompts once.
+        <strong>Prompt Autocomplete</strong> surfaces them the moment
+        you start typing — across every major AI chatbot and
+        coding assistant you already use daily.
+      </p>
+
+      <div class="hero-actions">
+        <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
+           class="btn-primary" rel="noopener"
+           aria-label="Install Prompt Autocomplete free Chrome extension">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 2v9M5 8l3 3 3-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M3 13h10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Install Free — Chrome
+        </a>
+        <a href="#how-it-works" class="btn-ghost" aria-label="See how Prompt Autocomplete works">
+          See how it works
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="hero-trust">
+        <div class="trust-chip">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M7 1l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9l-3 1.5.5-3.5L2 4.5 5.5 4 7 1z" fill="#16a34a"/>
+          </svg>
+          Free to install
+        </div>
+        <div class="trust-chip">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="2" y="5.5" width="10" height="7.5" rx="1.5" stroke="#7a7368" stroke-width="1.3"/>
+            <path d="M4.5 5.5V4a2.5 2.5 0 015 0v1.5" stroke="#7a7368" stroke-width="1.3"/>
+          </svg>
+          Prompts stay on your device
+        </div>
+        <div class="trust-chip">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5.5" stroke="#7a7368" stroke-width="1.3"/>
+            <path d="M4.5 7l2 2 3-3.5" stroke="#7a7368" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          No account needed
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo Window -->
+    <div class="demo-window" role="img" aria-label="Live demo of Prompt Autocomplete showing a dropdown as you type in an AI chat input">
+      <div class="demo-topbar" aria-hidden="true">
+        <div class="d-dot"></div>
+        <div class="d-dot"></div>
+        <div class="d-dot"></div>
+        <div class="demo-url-bar">chatgpt.com</div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-site">AI Chat Input</div>
+        <div class="demo-input-box">
+          <span aria-hidden="true">Summarize this in</span><span class="demo-cursor" aria-hidden="true"></span>
+        </div>
+        <div class="demo-dropdown" role="listbox" aria-label="Matching saved prompts">
+          <div class="demo-row active" role="option" aria-selected="true">
+            <span class="demo-tag">writing</span>
+            Summarize this in 3 bullet points
+          </div>
+          <div class="demo-row" role="option">
+            <span class="demo-tag">writing</span>
+            Summarize for a non-technical reader
+          </div>
+          <div class="demo-row" role="option">
+            <span class="demo-tag">action</span>
+            Summarize and list action items
+          </div>
+        </div>
+        <div class="demo-keys" aria-label="Keyboard shortcuts">
+          <kbd>↑</kbd><kbd>↓</kbd> navigate &nbsp;·&nbsp;
+          <kbd>↵</kbd> insert &nbsp;·&nbsp;
+          <kbd>Ctrl+Space</kbd> browse all
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- TRUST BAR -->
+<div class="trustbar" aria-label="Key facts about Prompt Autocomplete">
+  <div class="trustbar-inner">
+    <div class="tb-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
+        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Works on 50+ AI tools
+    </div>
+    <div class="tb-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
+        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Instant setup, no configuration
+    </div>
+    <div class="tb-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
+        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      100% local — zero data sent
+    </div>
+    <div class="tb-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
+        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Free plan available forever
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how-it-works" aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2 id="how-title">Simple by design. Powerful in use.</h2>
+    <p class="lead">No dashboards to manage. No copy-paste workflow. Just type — and your prompts are there.</p>
+
+    <div class="steps" role="list">
+      <article class="step" role="listitem">
+        <div class="step-num">STEP 01</div>
+        <span class="step-icon" aria-hidden="true">💬</span>
+        <h3>Save your prompts</h3>
+        <p>Open the popup and save any prompt you reuse often. Add a tag like "writing" or "email" to group similar ones. Takes five seconds.</p>
+      </article>
+      <article class="step" role="listitem">
+        <div class="step-num">STEP 02</div>
+        <span class="step-icon" aria-hidden="true">⚡</span>
+        <h3>Type in any AI tool</h3>
+        <p>Open any supported AI chatbot or coding assistant. The moment you begin typing, a dropdown of matching saved prompts appears automatically.</p>
+      </article>
+      <article class="step" role="listitem">
+        <div class="step-num">STEP 03</div>
+        <span class="step-icon" aria-hidden="true">✅</span>
+        <h3>Click and go</h3>
+        <p>Select a suggestion with a click or press Enter. The full prompt inserts instantly. Same experience on every AI tool you switch between.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features" aria-labelledby="feat-title">
+  <div class="wrap">
+    <div class="eyebrow">Features</div>
+    <h2 id="feat-title">Built for people who use AI every day.</h2>
+    <p class="lead">Everything you need to stop wasting time retyping the same prompts over and over.</p>
+
+    <div class="features-grid" role="list">
+      <article class="feat" role="listitem">
+        <div class="feat-icon" aria-hidden="true">🔍</div>
+        <h3>Autocomplete while typing</h3>
+        <p>Fuzzy matching surfaces relevant prompts from the first character. Most-used prompts rank first automatically.</p>
+      </article>
+      <article class="feat" role="listitem">
+        <div class="feat-icon" aria-hidden="true">⌨️</div>
+        <h3>Slash command shortcuts</h3>
+        <p>Type <code>/email</code> or <code>/summary</code> to instantly filter prompts by tag. Fast, keyboard-first workflow for power users.</p>
+      </article>
+      <article class="feat" role="listitem">
+        <div class="feat-icon" aria-hidden="true">🕐</div>
+        <h3>Prompt history navigator</h3>
+        <p>Arrow through prompts you have sent this session — like terminal history, but for AI conversations.</p>
+      </article>
+      <article class="feat" role="listitem">
+        <div class="feat-icon" aria-hidden="true">🌐</div>
+        <h3>Works across every AI tool</h3>
+        <p>Save a prompt once. It shows up on every supported AI chatbot and coding assistant without any extra setup.</p>
+      </article>
+      <article class="feat" role="listitem">
+        <div class="feat-icon" aria-hidden="true">📦</div>
+        <h3>Import and export</h3>
+        <p>Export your entire prompt library to JSON. Import it on any device or share prompt packs with others.</p>
+      </article>
+      <article class="feat" role="listitem">
+        <div class="feat-icon" aria-hidden="true">🔒</div>
+        <h3>Fully local storage</h3>
+        <p>Your prompts live in your browser only. No account, no server, no data ever leaving your machine.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- SITES -->
+<section class="sites-section" aria-labelledby="sites-title">
+  <div class="wrap">
+    <div class="eyebrow" style="display:flex;justify-content:center;">Supported tools</div>
+    <div class="big-number" aria-label="50 plus AI tools">50+</div>
+    <div class="big-label" id="sites-title">AI tools supported out of the box</div>
+
+    <p class="lead" style="margin: 0 auto 44px; text-align:center;">
+      Every major AI chatbot, coding assistant, and image generation tool
+      you open in your browser — one extension covers all of them.
+    </p>
+
+    <div class="sites-grid" role="list" aria-label="Supported AI tools">
+      <span class="site-pill hi" role="listitem">ChatGPT</span>
+      <span class="site-pill hi" role="listitem">Claude</span>
+      <span class="site-pill hi" role="listitem">Gemini</span>
+      <span class="site-pill hi" role="listitem">DeepSeek</span>
+      <span class="site-pill hi" role="listitem">Grok</span>
+      <span class="site-pill hi" role="listitem">Perplexity</span>
+      <span class="site-pill hi" role="listitem">Copilot</span>
+      <span class="site-pill hi" role="listitem">Mistral</span>
+      <span class="site-pill" role="listitem">Meta AI</span>
+      <span class="site-pill" role="listitem">AI Studio</span>
+      <span class="site-pill" role="listitem">NotebookLM</span>
+      <span class="site-pill" role="listitem">Lovable</span>
+      <span class="site-pill" role="listitem">Bolt</span>
+      <span class="site-pill" role="listitem">v0</span>
+      <span class="site-pill" role="listitem">Poe</span>
+      <span class="site-pill" role="listitem">HuggingChat</span>
+      <span class="site-pill" role="listitem">OpenRouter</span>
+      <span class="site-pill" role="listitem">Midjourney</span>
+      <span class="site-pill" role="listitem">Leonardo</span>
+      <span class="site-pill" role="listitem">Ideogram</span>
+      <span class="site-pill" role="listitem">Runway</span>
+      <span class="site-pill" role="listitem">Kling</span>
+      <span class="site-pill" role="listitem">HeyGen</span>
+      <span class="site-pill" role="listitem">InVideo</span>
+      <span class="site-pill" role="listitem">Groq</span>
+      <span class="site-pill" role="listitem">Cohere</span>
+      <span class="site-pill" role="listitem">Firefly</span>
+      <span class="site-pill" role="listitem">CapCut</span>
+      <span class="site-pill" role="listitem">+ 22 more</span>
+    </div>
+    <p class="sites-note">New tools added every update. If yours isn't listed, it likely will be soon.</p>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <div class="eyebrow" style="display:flex;justify-content:center;">Pricing</div>
+    <h2 id="pricing-title" style="text-align:center;">Simple. One-time. No subscriptions.</h2>
+    <p class="lead" style="text-align:center;margin:0 auto;">Pay once and use it every day. No renewal, no monthly bill, no surprises.</p>
+
+    <div class="pricing-grid">
+      <div class="pricing-card" aria-label="Free plan">
+        <div class="tier-name">Free</div>
+        <div class="price-big">$0</div>
+        <div class="price-note">forever, no card required</div>
+        <ul class="price-features" aria-label="Free plan features">
+          <li><span class="chk" aria-hidden="true">✓</span> Save up to 25 prompts</li>
+          <li><span class="chk" aria-hidden="true">✓</span> All 50+ AI tools supported</li>
+          <li><span class="chk" aria-hidden="true">✓</span> Autocomplete, slash commands, history</li>
+          <li><span class="chk" aria-hidden="true">✓</span> Tags and smart ranking</li>
+          <li><span class="chk" aria-hidden="true">✓</span> No account required</li>
+        </ul>
+        <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
+           class="price-btn free" rel="noopener" aria-label="Install free version">
+          Install Free
+        </a>
+      </div>
+
+      <div class="pricing-card pro" aria-label="Pro plan">
+        <div class="pro-badge">Most Popular</div>
+        <div class="tier-name">Pro</div>
+        <div class="price-big">$6</div>
+        <div class="price-note">one-time payment · price increases soon</div>
+        <ul class="price-features" aria-label="Pro plan features">
+          <li><span class="chk" aria-hidden="true">✓</span> <strong>Unlimited prompts</strong> — no cap ever</li>
+          <li><span class="chk" aria-hidden="true">✓</span> Everything in Free</li>
+          <li><span class="chk" aria-hidden="true">✓</span> License key — works on any device</li>
+          <li><span class="chk" aria-hidden="true">✓</span> Import and export prompt packs</li>
+          <li><span class="chk" aria-hidden="true">✓</span> Priority support</li>
+        </ul>
+        <a href="https://checkout.dodopayments.com/buy/pdt_0NcTg2hCATkECb0P9XqtZ?quantity=1"
+           class="price-btn pro-btn" rel="noopener"
+           aria-label="Buy Pro for 6 dollars, one-time payment">
+          Get Pro — $6 one-time
+        </a>
+      </div>
+    </div>
+    <p class="pricing-footnote">Secure checkout via Dodo Payments · License key delivered by email · No recurring charges</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="eyebrow">FAQ</div>
+    <h2 id="faq-title">Common questions, clear answers.</h2>
+
+    <div class="faq-list">
+      <details>
+        <summary>Which AI tools does Prompt Autocomplete work on?</summary>
+        <div class="faq-ans">Prompt Autocomplete works on 50+ AI tools — every major AI chatbot, coding assistant, and image generation platform available in Chrome. The list covers all the tools most people already use daily, and new ones are added with every release.</div>
+      </details>
+      <details>
+        <summary>Does saving a prompt once make it available on all AI tools?</summary>
+        <div class="faq-ans">Yes. Save a prompt once and it appears in the autocomplete dropdown on every supported AI tool. You do not need to re-save or reconfigure anything when switching between chatbots or assistants.</div>
+      </details>
+      <details>
+        <summary>Where are my prompts stored? Is anything sent to a server?</summary>
+        <div class="faq-ans">Your prompts are stored entirely in your browser using Chrome's local storage API. Nothing is sent to any external server. Pro license activation sends only your license key for a one-time validation — no prompt content ever leaves your device.</div>
+      </details>
+      <details>
+        <summary>What are slash commands and how do they work?</summary>
+        <div class="faq-ans">Slash commands let you filter prompts by tag in any AI input. If you have tagged prompts as "email", type /email and only those prompts appear. It is a fast keyboard shortcut for people who have prompts across multiple categories.</div>
+      </details>
+      <details>
+        <summary>Is the $6 Pro price a subscription?</summary>
+        <div class="faq-ans">No. $6 is a one-time payment. You receive a license key that unlocks unlimited prompts permanently. No monthly billing, no renewal, no account required after activation. The price is planned to increase as more features are added.</div>
+      </details>
+      <details>
+        <summary>What is the prompt history navigator?</summary>
+        <div class="faq-ans">It works like terminal command history. Use the arrow keys in any AI input field to cycle through prompts you have sent during that session. Useful for iterating on variations of the same prompt without retyping it from scratch.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-section" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div class="eyebrow">Get started</div>
+    <h2 id="cta-title">Stop retyping.<br />Start in 30 seconds.</h2>
+    <p>Free to install. No account. Works immediately on every AI tool you already use.</p>
+    <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
+       class="btn-primary" rel="noopener" style="display:inline-flex;"
+       aria-label="Add Prompt Autocomplete to Chrome for free">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 2v9M5 8l3 3 3-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M3 13h10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      Add to Chrome — It's Free
+    </a>
+    <div class="cta-chips">
+      <div class="cta-chip">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/>
+          <path d="M4.5 6.5l1.5 1.5 3-3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        No account needed
+      </div>
+      <div class="cta-chip">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/>
+          <path d="M4.5 6.5l1.5 1.5 3-3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Works on all 50+ AI tools
+      </div>
+      <div class="cta-chip">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/>
+          <path d="M4.5 6.5l1.5 1.5 3-3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Free tier available forever
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-logo">Prompt Autocomplete</div>
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <div class="footer-copy">© 2026 Prompt Autocomplete</div>
+  </div>
+</footer>
+
 </body>
 </html>
