@@ -29,7 +29,6 @@ scripting — Injects the autocomplete dropdown into the prompt input field. Rea
 Host permissions — Required to run the content script on supported AI platforms. The script reads only the prompt input field value and writes back the selected prompt. No other page content is accessed.
 
 5. Third Party Services
-Google Analytics – counting events anonymously (no personal data, no prompt content).
 Tally.so – feedback forms are optional. Responses are subject to Tally privacy policy. No data is collected if you decide not to fill out the form.
 Dodo Payments – manages Pro purchases. We never receive or keep any of your payment information.
 License check server – only receives your license key for confirming your Pro license.
