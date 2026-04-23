@@ -1,1008 +1,780 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Prompt Autocomplete — Save & Reuse AI Prompts Instantly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;
+  --bg2:#111111;
+  --bg3:#161616;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --text:#f0ede8;
+  --muted:#6b6660;
+  --muted2:#9a9490;
+  --amber:#f0a500;
+  --amber2:#e8920a;
+  --amber-dim:rgba(240,165,0,0.08);
+  --amber-border:rgba(240,165,0,0.2);
+  --green:#4ade80;
+  --red-dim:rgba(239,68,68,0.15);
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+  line-height:1.7;
+  overflow-x:hidden;
+}
 
-  <title>Prompt Autocomplete — Type Less, Do More on Every AI Tool</title>
-  <meta name="description" content="Save your best prompts once. Prompt Autocomplete shows them instantly as you type — across every major AI chatbot and coding assistant. Free Chrome extension." />
-  <meta name="keywords" content="AI prompt autocomplete, autocomplete for AI tools, AI chatbot productivity, Chrome extension for AI, save and reuse prompts, prompt shortcuts, AI workflow extension" />
-  <link rel="canonical" href="https://promptautocomplete.vercel.app/" />
+/* ── Noise overlay ── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9999;
+}
 
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://promptautocomplete.vercel.app/" />
-  <meta property="og:title" content="Prompt Autocomplete — Instant Prompt Suggestions on Every AI Tool" />
-  <meta property="og:description" content="Stop retyping the same prompts. Prompt Autocomplete brings your saved prompts back the moment you start typing — on 50+ AI tools." />
-  <meta property="og:image" content="https://promptautocomplete.vercel.app/og-image.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Prompt Autocomplete — Type Less on Every AI Tool" />
-  <meta name="twitter:description" content="Your prompts appear as you type. Free Chrome extension. Works on 50+ AI tools." />
+/* ── Nav ── */
+nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 40px;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  background:rgba(10,10,10,0.92);
+  backdrop-filter:blur(12px);
+  z-index:100;
+}
+.nav-logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:-0.01em;
+  color:var(--text);
+  text-decoration:none;
+}
+.nav-logo-icon{
+  width:28px;height:28px;
+  background:var(--amber);
+  border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.nav-logo-icon svg{color:#000}
+.nav-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 18px;
+  border-radius:6px;
+  background:var(--amber);
+  color:#000;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;font-weight:600;
+  text-decoration:none;
+  transition:background 0.15s,transform 0.1s;
+  letter-spacing:0.01em;
+}
+.nav-cta:hover{background:var(--amber2);transform:translateY(-1px)}
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Prompt Autocomplete",
-    "operatingSystem": "Chrome",
-    "applicationCategory": "BrowserApplication",
-    "applicationSubCategory": "Productivity",
-    "offers": [
-      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free — up to 25 prompts" },
-      { "@type": "Offer", "price": "6.00", "priceCurrency": "USD", "description": "Pro — unlimited prompts, one-time" }
-    ],
-    "description": "Prompt Autocomplete is a Chrome extension that shows your saved AI prompts as you type, across every major AI chatbot and coding assistant.",
-    "url": "https://promptautocomplete.vercel.app/",
-    "downloadUrl": "https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe",
-    "softwareVersion": "3.1.1",
-    "featureList": [
-      "Autocomplete prompts while typing",
-      "Works on 50+ AI tools and chatbots",
-      "Save prompts once, reuse everywhere",
-      "Slash command shortcuts",
-      "Prompt history navigator",
-      "Tag and organize prompts",
-      "Works offline — local storage only"
-    ]
-  }
-  </script>
+/* ── Sections ── */
+section{padding:100px 40px;max-width:900px;margin:0 auto;}
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Which AI tools does Prompt Autocomplete work on?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Prompt Autocomplete works on 50+ AI tools including every major AI chatbot, coding assistant, and image generation platform available in Chrome." }
-      },
-      {
-        "@type": "Question",
-        "name": "Is Prompt Autocomplete free?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The free tier lets you save up to 25 prompts and works on all supported sites. Pro ($6 one-time) unlocks unlimited prompts." }
-      },
-      {
-        "@type": "Question",
-        "name": "Where are my prompts stored?",
-        "acceptedAnswer": { "@type": "Answer", "text": "All prompts are stored locally in your browser. Nothing is sent to any server. Your data stays on your device." }
-      },
-      {
-        "@type": "Question",
-        "name": "How does the prompt autocomplete work?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Once installed, the extension watches your typing in any AI chat input. When you start typing, it shows a dropdown of matching saved prompts. Click to insert instantly." }
-      },
-      {
-        "@type": "Question",
-        "name": "Does it work across different AI tools?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Prompts you save work across every supported AI tool. Switch between chatbots and your prompts follow you everywhere." }
-      }
-    ]
-  }
-  </script>
+/* ── Hero ── */
+.hero{
+  padding-top:120px;
+  padding-bottom:120px;
+  text-align:center;
+  position:relative;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:5px 14px;
+  border:1px solid var(--amber-border);
+  border-radius:4px;
+  background:var(--amber-dim);
+  font-size:11px;
+  color:var(--amber);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  margin-bottom:32px;
+}
+.hero-tag span{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+h1{
+  font-family:'Fraunces',serif;
+  font-size:clamp(38px,6vw,72px);
+  font-weight:300;
+  line-height:1.1;
+  letter-spacing:-0.03em;
+  color:var(--text);
+  margin-bottom:24px;
+}
+h1 em{
+  font-style:italic;
+  color:var(--amber);
+}
+.hero-sub{
+  font-size:15px;
+  color:var(--muted2);
+  line-height:1.8;
+  max-width:560px;
+  margin:0 auto 40px;
+  font-family:'IBM Plex Mono',monospace;
+}
+.hero-cta-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.btn-main{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 32px;
+  border-radius:6px;
+  background:var(--amber);
+  color:#000;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;font-weight:600;
+  text-decoration:none;
+  transition:all 0.15s;
+  letter-spacing:0.01em;
+  border:none;cursor:pointer;
+}
+.btn-main:hover{background:var(--amber2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(240,165,0,0.25)}
+.hero-price-note{
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:0.03em;
+}
+.hero-price-note strong{color:var(--muted2)}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+/* ── Terminal mockup ── */
+.terminal{
+  margin:60px auto 0;
+  max-width:580px;
+  border:1px solid var(--border2);
+  border-radius:10px;
+  overflow:hidden;
+  background:var(--bg2);
+  text-align:left;
+}
+.terminal-bar{
+  display:flex;align-items:center;gap:7px;
+  padding:12px 16px;
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+}
+.t-dot{width:11px;height:11px;border-radius:50%}
+.t-dot.r{background:#ff5f57}
+.t-dot.y{background:#febc2e}
+.t-dot.g{background:#28c840}
+.terminal-url{
+  flex:1;
+  text-align:center;
+  font-size:11px;
+  color:var(--muted);
+  background:rgba(255,255,255,0.04);
+  padding:3px 12px;
+  border-radius:4px;
+  margin:0 8px;
+}
+.terminal-body{padding:20px 20px 24px;font-size:12.5px;line-height:1.9}
+.t-label{font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px}
+.t-input{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;
+  border:1px solid var(--border2);
+  border-radius:6px;
+  background:rgba(255,255,255,0.03);
+  margin-bottom:8px;
+}
+.t-cursor{
+  display:inline-block;
+  width:2px;height:16px;
+  background:var(--amber);
+  animation:blink 1s step-end infinite;
+  vertical-align:middle;
+  margin-left:2px;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.t-typing{color:var(--text)}
+.t-dropdown{
+  border:1px solid var(--border2);
+  border-radius:6px;
+  overflow:hidden;
+  background:var(--bg3);
+}
+.t-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  transition:background 0.1s;
+  cursor:pointer;
+}
+.t-item:last-child{border-bottom:none}
+.t-item.active{background:rgba(240,165,0,0.1);border-left:2px solid var(--amber)}
+.t-item-text{font-size:12px;color:var(--text)}
+.t-item-tag{font-size:10px;color:var(--muted);background:rgba(255,255,255,0.05);padding:2px 7px;border-radius:3px}
+.t-hint{font-size:10px;color:var(--muted);margin-top:8px;text-align:right}
 
-  <style>
-    :root {
-      --bg:        #faf9f7;
-      --bg2:       #f4f2ee;
-      --surface:   #ffffff;
-      --border:    #e8e4dd;
-      --border2:   #d8d3cb;
-      --text:      #1a1714;
-      --body:      #3d3830;
-      --muted:     #7a7368;
-      --accent:    #2563eb;
-      --accent-bg: #eff6ff;
-      --accent-dk: #1d4ed8;
-      --green:     #16a34a;
-      --font-head: 'Montserrat', sans-serif;
-      --font-body: 'Lora', serif;
-      --r:         8px;
-      --r-lg:      14px;
-      --shadow-lg: 0 2px 8px rgba(0,0,0,0.06), 0 16px 48px rgba(0,0,0,0.08);
-    }
+/* ── Section headings ── */
+.section-label{
+  font-size:10px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--amber);
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-label::after{
+  content:'';flex:1;
+  height:1px;background:var(--border);
+}
+h2{
+  font-family:'Fraunces',serif;
+  font-size:clamp(28px,4vw,44px);
+  font-weight:300;
+  line-height:1.2;
+  letter-spacing:-0.02em;
+  margin-bottom:16px;
+}
+h2 em{font-style:italic;color:var(--amber)}
+.section-sub{
+  font-size:13px;
+  color:var(--muted2);
+  max-width:520px;
+  line-height:1.8;
+  margin-bottom:48px;
+}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--body);
-      font-family: var(--font-body);
-      font-size: 17px;
-      line-height: 1.75;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-    a { color: inherit; text-decoration: none; }
+/* ── Problem ── */
+.pain-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:1px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  background:var(--border);
+}
+.pain-card{
+  background:var(--bg2);
+  padding:28px 24px;
+  position:relative;
+}
+.pain-num{
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:0.06em;
+  margin-bottom:14px;
+  display:block;
+}
+.pain-title{
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:8px;
+  line-height:1.4;
+}
+.pain-desc{
+  font-size:12px;
+  color:var(--muted2);
+  line-height:1.7;
+}
 
-    .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
-    section { padding: 88px 0; }
+/* ── How it works ── */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{
+  display:grid;
+  grid-template-columns:48px 1fr;
+  gap:24px;
+  align-items:flex-start;
+  padding:28px 0;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.step:last-child{border-bottom:none}
+.step-num{
+  width:40px;height:40px;
+  border:1px solid var(--border2);
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;
+  color:var(--muted2);
+  font-weight:600;
+  flex-shrink:0;
+  background:var(--bg2);
+}
+.step.active-step .step-num{
+  border-color:var(--amber-border);
+  background:var(--amber-dim);
+  color:var(--amber);
+}
+.step-title{
+  font-size:15px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:6px;
+  line-height:1.4;
+}
+.step-desc{font-size:12px;color:var(--muted2);line-height:1.7}
+.step-code{
+  display:inline-block;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:2px 8px;
+  font-size:11px;
+  color:var(--amber);
+  margin-top:6px;
+}
+.platforms-wrap{
+  margin-top:48px;
+  padding:20px 24px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--bg2);
+}
+.platforms-label{font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px}
+.platforms{display:flex;flex-wrap:wrap;gap:8px}
+.platform-pill{
+  padding:4px 12px;
+  border:1px solid var(--border);
+  border-radius:4px;
+  font-size:11px;
+  color:var(--muted2);
+  background:rgba(255,255,255,0.02);
+}
+.platform-pill.highlight{border-color:var(--border2);color:var(--text)}
 
-    /* NAV */
-    nav {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .nav-inner {
-      max-width: 960px; margin: 0 auto; padding: 0 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 62px;
-    }
-    .nav-logo {
-      font-family: var(--font-head);
-      font-weight: 800; font-size: 15px;
-      letter-spacing: -0.02em; color: var(--text);
-      display: flex; align-items: center; gap: 9px;
-    }
-    .logo-mark {
-      width: 30px; height: 30px;
-      background: var(--accent); border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    .nav-links { display: flex; align-items: center; gap: 32px; }
-    .nav-links a {
-      font-family: var(--font-head);
-      font-size: 13px; font-weight: 600;
-      color: var(--muted); letter-spacing: 0.01em;
-      transition: color 0.15s;
-    }
-    .nav-links a:hover { color: var(--text); }
-    .nav-cta {
-      font-family: var(--font-head);
-      font-weight: 700; font-size: 13px;
-      background: var(--accent); color: #fff;
-      padding: 9px 20px; border-radius: var(--r);
-      transition: background 0.15s, transform 0.15s;
-    }
-    .nav-cta:hover { background: var(--accent-dk); transform: translateY(-1px); }
+/* ── Pricing ── */
+.pricing-wrap{display:flex;justify-content:center}
+.pricing-card{
+  width:100%;max-width:420px;
+  border:1px solid var(--border2);
+  border-radius:10px;
+  overflow:hidden;
+  background:var(--bg2);
+}
+.pricing-top{
+  padding:32px 32px 28px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.early-bird-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;
+  background:var(--amber-dim);
+  border:1px solid var(--amber-border);
+  border-radius:4px;
+  font-size:10px;
+  color:var(--amber);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  margin-bottom:20px;
+}
+.price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.price-main{
+  font-family:'Fraunces',serif;
+  font-size:56px;
+  font-weight:300;
+  color:var(--text);
+  line-height:1;
+  letter-spacing:-0.03em;
+}
+.price-old{
+  font-size:20px;
+  color:var(--muted);
+  text-decoration:line-through;
+}
+.price-type{font-size:12px;color:var(--muted);margin-bottom:20px}
+.spots-bar-wrap{margin-top:16px}
+.spots-label{
+  display:flex;justify-content:space-between;
+  font-size:11px;color:var(--muted);margin-bottom:7px;
+}
+.spots-bar{
+  height:3px;
+  background:rgba(255,255,255,0.06);
+  border-radius:2px;
+  overflow:hidden;
+}
+.spots-fill{
+  height:100%;width:35%;
+  background:var(--amber);
+  border-radius:2px;
+  transition:width 0.3s;
+}
+.pricing-features{padding:24px 32px;border-bottom:1px solid var(--border)}
+.feature{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:7px 0;
+  font-size:12.5px;
+  color:var(--muted2);
+}
+.feature-check{
+  width:16px;height:16px;
+  border-radius:3px;
+  background:rgba(74,222,128,0.1);
+  border:1px solid rgba(74,222,128,0.2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  margin-top:2px;
+}
+.feature-check svg{color:var(--green)}
+.pricing-bottom{padding:24px 32px}
+.btn-purchase{
+  display:block;width:100%;
+  padding:14px;
+  border-radius:6px;
+  background:var(--amber);
+  color:#000;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;font-weight:600;
+  text-align:center;
+  text-decoration:none;
+  border:none;cursor:pointer;
+  transition:all 0.15s;
+  letter-spacing:0.01em;
+  margin-bottom:12px;
+}
+.btn-purchase:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(240,165,0,0.3)}
+.purchase-note{font-size:11px;color:var(--muted);text-align:center;line-height:1.6}
 
-    /* HERO */
-    .hero {
-      padding: 80px 0 72px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-    }
-    .hero-inner {
-      max-width: 960px; margin: 0 auto; padding: 0 28px;
-      display: grid;
-      grid-template-columns: 1fr 400px;
-      gap: 64px; align-items: center;
-    }
-    .hero-label {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-family: var(--font-head);
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      color: var(--accent);
-      background: var(--accent-bg);
-      border: 1px solid #bfdbfe;
-      padding: 5px 12px; border-radius: 999px;
-      margin-bottom: 24px;
-    }
-    .label-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%; background: var(--accent);
-    }
-    h1 {
-      font-family: var(--font-head);
-      font-size: clamp(34px, 4.5vw, 52px);
-      font-weight: 900;
-      line-height: 1.08; letter-spacing: -0.03em;
-      color: var(--text); margin-bottom: 22px;
-    }
-    h1 em { font-style: normal; color: var(--accent); }
-    .hero-desc {
-      font-family: var(--font-body);
-      font-size: 18px; color: var(--body);
-      line-height: 1.7; margin-bottom: 36px;
-    }
-    .hero-desc strong { color: var(--text); font-weight: 500; }
-    .hero-actions {
-      display: flex; align-items: center; gap: 14px;
-      flex-wrap: wrap; margin-bottom: 32px;
-    }
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--accent); color: #fff;
-      font-family: var(--font-head);
-      font-weight: 700; font-size: 14px;
-      padding: 13px 24px; border-radius: var(--r);
-      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
-      transition: all 0.15s;
-    }
-    .btn-primary:hover {
-      background: var(--accent-dk);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
-    }
-    .btn-ghost {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-family: var(--font-head);
-      font-weight: 600; font-size: 14px;
-      color: var(--muted); transition: color 0.15s;
-    }
-    .btn-ghost:hover { color: var(--text); }
-    .hero-trust { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .trust-chip {
-      display: flex; align-items: center; gap: 6px;
-      font-family: var(--font-head);
-      font-size: 12px; font-weight: 600; color: var(--muted);
-    }
+/* ── Footer ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:48px 40px;
+  max-width:900px;
+  margin:0 auto;
+}
+.footer-inner{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:40px;
+  flex-wrap:wrap;
+}
+.footer-brand{}
+.footer-logo{
+  display:flex;align-items:center;gap:9px;
+  font-size:13px;font-weight:600;
+  margin-bottom:10px;
+  text-decoration:none;color:var(--text);
+}
+.footer-tagline{font-size:11px;color:var(--muted);line-height:1.7;max-width:280px}
+.footer-links{display:flex;flex-direction:column;gap:8px;text-align:right}
+.footer-links a{
+  font-size:12px;color:var(--muted2);
+  text-decoration:none;
+  transition:color 0.12s;
+}
+.footer-links a:hover{color:var(--text)}
+.footer-bottom{
+  margin-top:40px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+  font-size:11px;
+  color:var(--muted);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+}
 
-    /* DEMO */
-    .demo-window {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      box-shadow: var(--shadow-lg);
-      overflow: hidden;
-    }
-    .demo-topbar {
-      background: var(--bg2); border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
-      display: flex; align-items: center; gap: 7px;
-    }
-    .d-dot { width: 11px; height: 11px; border-radius: 50%; }
-    .d-dot:nth-child(1) { background: #fc5f57; }
-    .d-dot:nth-child(2) { background: #fdbb2e; }
-    .d-dot:nth-child(3) { background: #27c93f; }
-    .demo-url-bar {
-      flex: 1; text-align: center;
-      font-family: var(--font-head);
-      font-size: 11px; color: var(--muted); font-weight: 500;
-    }
-    .demo-body { padding: 18px; }
-    .demo-site {
-      font-family: var(--font-head);
-      font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      color: var(--muted); margin-bottom: 10px;
-    }
-    .demo-input-box {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border2);
-      border-radius: 8px;
-      padding: 11px 14px;
-      font-family: var(--font-body);
-      font-size: 14px; color: var(--text);
-    }
-    .demo-cursor {
-      display: inline-block;
-      width: 2px; height: 15px;
-      background: var(--accent);
-      vertical-align: middle; margin-left: 1px;
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 50% { opacity: 0; } }
-    .demo-dropdown {
-      margin-top: 6px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px; overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.09);
-    }
-    .demo-row {
-      padding: 9px 14px;
-      font-size: 13px; font-family: var(--font-head); font-weight: 500;
-      color: var(--body);
-      display: flex; align-items: center; gap: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-    .demo-row:last-child { border-bottom: none; }
-    .demo-row.active { background: var(--accent-bg); color: var(--accent); }
-    .demo-tag {
-      font-size: 10px; font-weight: 700;
-      background: var(--bg2); color: var(--muted);
-      padding: 2px 7px; border-radius: 4px;
-      text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0;
-    }
-    .demo-row.active .demo-tag { background: #dbeafe; color: var(--accent); }
-    .demo-keys {
-      margin-top: 10px;
-      display: flex; gap: 8px; align-items: center;
-      font-family: var(--font-head);
-      font-size: 11px; color: var(--muted); font-weight: 500;
-    }
-    kbd {
-      background: var(--bg2); border: 1px solid var(--border2);
-      padding: 1px 6px; border-radius: 4px;
-      font-size: 10px; font-family: var(--font-head);
-      font-weight: 600; color: var(--body);
-    }
+/* ── Responsive ── */
+@media(max-width:640px){
+  nav{padding:16px 20px}
+  section{padding:70px 20px}
+  .hero{padding-top:80px;padding-bottom:80px}
+  .pain-grid{grid-template-columns:1fr}
+  .step{grid-template-columns:36px 1fr;gap:16px}
+  .footer-inner{flex-direction:column}
+  .footer-links{text-align:left}
+  .footer-bottom{flex-direction:column;align-items:flex-start}
+  footer{padding:40px 20px}
+}
 
-    /* TRUST BAR */
-    .trustbar {
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 0;
-    }
-    .trustbar-inner {
-      max-width: 960px; margin: 0 auto; padding: 0 28px;
-      display: flex; align-items: center; justify-content: center;
-      gap: 40px; flex-wrap: wrap;
-    }
-    .tb-item {
-      display: flex; align-items: center; gap: 8px;
-      font-family: var(--font-head);
-      font-size: 12px; font-weight: 600; color: var(--muted);
-    }
-
-    /* SECTION LABELS */
-    .eyebrow {
-      font-family: var(--font-head);
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.12em;
-      color: var(--accent); margin-bottom: 14px;
-    }
-    h2 {
-      font-family: var(--font-head);
-      font-size: clamp(26px, 3.5vw, 40px);
-      font-weight: 800; letter-spacing: -0.03em;
-      color: var(--text); line-height: 1.12; margin-bottom: 16px;
-    }
-    .lead {
-      font-family: var(--font-body);
-      font-size: 18px; color: var(--muted);
-      max-width: 520px; line-height: 1.7;
-    }
-
-    /* HOW IT WORKS */
-    .how-section { background: var(--surface); border-bottom: 1px solid var(--border); }
-    .steps {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 0; margin-top: 52px;
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg); overflow: hidden;
-    }
-    .step {
-      padding: 36px 30px;
-      border-right: 1px solid var(--border);
-      background: var(--surface);
-    }
-    .step:last-child { border-right: none; }
-    .step-num {
-      font-family: var(--font-head);
-      font-size: 11px; font-weight: 800;
-      color: var(--accent); letter-spacing: 0.08em; margin-bottom: 18px;
-    }
-    .step-icon { font-size: 26px; margin-bottom: 16px; display: block; }
-    .step h3 {
-      font-family: var(--font-head);
-      font-size: 16px; font-weight: 800;
-      letter-spacing: -0.02em; color: var(--text); margin-bottom: 10px;
-    }
-    .step p { font-family: var(--font-body); font-size: 14px; color: var(--muted); line-height: 1.65; }
-
-    /* FEATURES */
-    .features-section { background: var(--bg); border-bottom: 1px solid var(--border); }
-    .features-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 1px; margin-top: 52px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg); overflow: hidden;
-    }
-    .feat {
-      padding: 30px 26px;
-      background: var(--surface);
-      transition: background 0.15s;
-    }
-    .feat:hover { background: var(--bg); }
-    .feat-icon { font-size: 22px; margin-bottom: 14px; }
-    .feat h3 {
-      font-family: var(--font-head);
-      font-size: 15px; font-weight: 800;
-      letter-spacing: -0.02em; color: var(--text); margin-bottom: 8px;
-    }
-    .feat p { font-family: var(--font-body); font-size: 13px; color: var(--muted); line-height: 1.65; }
-
-    /* SITES */
-    .sites-section {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-    }
-    .big-number {
-      font-family: var(--font-head);
-      font-size: clamp(72px, 12vw, 128px);
-      font-weight: 900; letter-spacing: -0.05em;
-      color: var(--text); line-height: 1; margin-bottom: 4px;
-    }
-    .big-label {
-      font-family: var(--font-head);
-      font-size: 16px; font-weight: 600;
-      color: var(--muted); margin-bottom: 44px;
-    }
-    .sites-grid {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      justify-content: center;
-      max-width: 680px; margin: 0 auto 36px;
-    }
-    .site-pill {
-      font-family: var(--font-head);
-      font-size: 12px; font-weight: 600;
-      border: 1px solid var(--border2);
-      background: var(--surface); color: var(--muted);
-      padding: 5px 14px; border-radius: 999px;
-      transition: all 0.15s;
-    }
-    .site-pill:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
-    .site-pill.hi { background: var(--bg2); color: var(--body); border-color: var(--border2); }
-    .sites-note { font-family: var(--font-head); font-size: 13px; color: var(--muted); font-weight: 500; }
-
-    /* PRICING */
-    .pricing-section { background: var(--bg); border-bottom: 1px solid var(--border); text-align: center; }
-    .pricing-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 24px; max-width: 680px; margin: 52px auto 0; text-align: left;
-    }
-    .pricing-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg); padding: 34px 28px;
-    }
-    .pricing-card.pro { border: 2px solid var(--accent); position: relative; }
-    .pro-badge {
-      position: absolute; top: -13px; left: 24px;
-      background: var(--accent); color: #fff;
-      font-family: var(--font-head);
-      font-size: 10px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      padding: 3px 12px; border-radius: 999px;
-    }
-    .tier-name {
-      font-family: var(--font-head);
-      font-size: 12px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      color: var(--muted); margin-bottom: 10px;
-    }
-    .price-big {
-      font-family: var(--font-head);
-      font-size: 52px; font-weight: 900;
-      letter-spacing: -0.04em; color: var(--text);
-      line-height: 1; margin-bottom: 4px;
-    }
-    .price-note {
-      font-family: var(--font-head);
-      font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 26px;
-    }
-    .price-features { list-style: none; margin-bottom: 28px; }
-    .price-features li {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-family: var(--font-body);
-      font-size: 14px; color: var(--body);
-      margin-bottom: 11px; line-height: 1.5;
-    }
-    .chk { color: var(--green); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-    .price-btn {
-      display: block; width: 100%; text-align: center;
-      font-family: var(--font-head);
-      font-weight: 700; font-size: 14px;
-      padding: 12px; border-radius: var(--r);
-      transition: all 0.15s; letter-spacing: 0.01em;
-    }
-    .price-btn.free { border: 1px solid var(--border2); background: transparent; color: var(--body); }
-    .price-btn.free:hover { border-color: var(--accent); color: var(--accent); }
-    .price-btn.pro-btn {
-      background: var(--accent); color: #fff;
-      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
-    }
-    .price-btn.pro-btn:hover {
-      background: var(--accent-dk);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
-    }
-    .pricing-footnote {
-      font-family: var(--font-head);
-      font-size: 12px; color: var(--muted); font-weight: 500;
-      margin-top: 20px; text-align: center;
-    }
-
-    /* FAQ */
-    .faq-section { background: var(--surface); border-bottom: 1px solid var(--border); }
-    .faq-list { max-width: 660px; margin-top: 52px; }
-    details { border-bottom: 1px solid var(--border); }
-    details:first-child { border-top: 1px solid var(--border); }
-    summary {
-      padding: 22px 0; cursor: pointer; list-style: none;
-      display: flex; align-items: center; justify-content: space-between;
-      font-family: var(--font-head);
-      font-size: 16px; font-weight: 700;
-      letter-spacing: -0.02em; color: var(--text); gap: 16px;
-    }
-    summary::-webkit-details-marker { display: none; }
-    summary::after { content: '+'; font-size: 20px; font-weight: 400; color: var(--muted); flex-shrink: 0; }
-    details[open] summary::after { content: '−'; }
-    .faq-ans {
-      padding-bottom: 22px;
-      font-family: var(--font-body);
-      font-size: 15px; color: var(--muted); line-height: 1.75; max-width: 560px;
-    }
-
-    /* FINAL CTA */
-    .cta-section { background: var(--text); text-align: center; padding: 96px 0; }
-    .cta-section .eyebrow { color: #93c5fd; }
-    .cta-section h2 { color: #fff; font-size: clamp(28px, 4vw, 46px); margin-bottom: 16px; }
-    .cta-section p {
-      font-family: var(--font-body); font-size: 18px; color: #94a3b8;
-      max-width: 440px; margin: 0 auto 40px; line-height: 1.7;
-    }
-    .cta-chips {
-      display: flex; justify-content: center; gap: 24px;
-      flex-wrap: wrap; margin-top: 32px;
-    }
-    .cta-chip {
-      display: flex; align-items: center; gap: 7px;
-      font-family: var(--font-head);
-      font-size: 12px; font-weight: 600; color: #64748b;
-    }
-
-    /* FOOTER */
-    footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 28px 0; }
-    .footer-inner {
-      max-width: 960px; margin: 0 auto; padding: 0 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 16px;
-    }
-    .footer-logo { font-family: var(--font-head); font-size: 14px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
-    .footer-links { display: flex; gap: 28px; }
-    .footer-links a {
-      font-family: var(--font-head); font-size: 12px; font-weight: 600;
-      color: var(--muted); transition: color 0.15s;
-    }
-    .footer-links a:hover { color: var(--text); }
-    .footer-copy { font-family: var(--font-head); font-size: 12px; color: var(--muted); font-weight: 500; }
-
-    /* ANIMATIONS */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .hero-label   { animation: fadeUp 0.4s ease both; }
-    h1            { animation: fadeUp 0.4s 0.08s ease both; }
-    .hero-desc    { animation: fadeUp 0.4s 0.14s ease both; }
-    .hero-actions { animation: fadeUp 0.4s 0.2s ease both; }
-    .hero-trust   { animation: fadeUp 0.4s 0.26s ease both; }
-    .demo-window  { animation: fadeUp 0.5s 0.1s ease both; }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
-      .steps { grid-template-columns: 1fr; }
-      .step { border-right: none; border-bottom: 1px solid var(--border); }
-      .step:last-child { border-bottom: none; }
-      .features-grid { grid-template-columns: 1fr 1fr; }
-      .pricing-grid { grid-template-columns: 1fr; }
-      .nav-links { display: none; }
-      section { padding: 64px 0; }
-    }
-    @media (max-width: 520px) {
-      .features-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+/* ── Scroll reveal ── */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav aria-label="Main navigation">
-  <div class="nav-inner">
-    <div class="nav-logo">
-      <div class="logo-mark" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M2 8h5M2 5h8M2 11h3" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="12" cy="8" r="2.5" stroke="#fff" stroke-width="1.5"/>
-        </svg>
-      </div>
-      Prompt Autocomplete
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 11 12 14 22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
     </div>
-    <div class="nav-links">
-      <a href="#how-it-works">How it works</a>
-      <a href="#features">Features</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
-    </div>
-    <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
-       class="nav-cta" rel="noopener" aria-label="Add Prompt Autocomplete to Chrome for free">
-      Add to Chrome — Free
-    </a>
-  </div>
+    Prompt Autocomplete
+  </a>
+  <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdke" class="nav-cta">
+    Get Early Bird — $10 →
+  </a>
 </nav>
 
-<!-- HERO -->
-<header class="hero" role="banner">
-  <div class="hero-inner">
-    <div class="hero-text">
-      <div class="hero-label">
-        <div class="label-dot" aria-hidden="true"></div>
-        Chrome Extension · 50+ AI Tools
-      </div>
-
-      <h1>Your prompts appear<br /><em>as you type.</em></h1>
-
-      <p class="hero-desc">
-        Save your best prompts once.
-        <strong>Prompt Autocomplete</strong> surfaces them the moment
-        you start typing — across every major AI chatbot and
-        coding assistant you already use daily.
-      </p>
-
-      <div class="hero-actions">
-        <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
-           class="btn-primary" rel="noopener"
-           aria-label="Install Prompt Autocomplete free Chrome extension">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M8 2v9M5 8l3 3 3-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M3 13h10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-          Install Free — Chrome
-        </a>
-        <a href="#how-it-works" class="btn-ghost" aria-label="See how Prompt Autocomplete works">
-          See how it works
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </a>
-      </div>
-
-      <div class="hero-trust">
-        <div class="trust-chip">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M7 1l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9l-3 1.5.5-3.5L2 4.5 5.5 4 7 1z" fill="#16a34a"/>
-          </svg>
-          Free to install
-        </div>
-        <div class="trust-chip">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <rect x="2" y="5.5" width="10" height="7.5" rx="1.5" stroke="#7a7368" stroke-width="1.3"/>
-            <path d="M4.5 5.5V4a2.5 2.5 0 015 0v1.5" stroke="#7a7368" stroke-width="1.3"/>
-          </svg>
-          Prompts stay on your device
-        </div>
-        <div class="trust-chip">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <circle cx="7" cy="7" r="5.5" stroke="#7a7368" stroke-width="1.3"/>
-            <path d="M4.5 7l2 2 3-3.5" stroke="#7a7368" stroke-width="1.3" stroke-linecap="round"/>
-          </svg>
-          No account needed
-        </div>
-      </div>
-    </div>
-
-    <!-- Demo Window -->
-    <div class="demo-window" role="img" aria-label="Live demo of Prompt Autocomplete showing a dropdown as you type in an AI chat input">
-      <div class="demo-topbar" aria-hidden="true">
-        <div class="d-dot"></div>
-        <div class="d-dot"></div>
-        <div class="d-dot"></div>
-        <div class="demo-url-bar">chatgpt.com</div>
-      </div>
-      <div class="demo-body">
-        <div class="demo-site">AI Chat Input</div>
-        <div class="demo-input-box">
-          <span aria-hidden="true">Summarize this in</span><span class="demo-cursor" aria-hidden="true"></span>
-        </div>
-        <div class="demo-dropdown" role="listbox" aria-label="Matching saved prompts">
-          <div class="demo-row active" role="option" aria-selected="true">
-            <span class="demo-tag">writing</span>
-            Summarize this in 3 bullet points
-          </div>
-          <div class="demo-row" role="option">
-            <span class="demo-tag">writing</span>
-            Summarize for a non-technical reader
-          </div>
-          <div class="demo-row" role="option">
-            <span class="demo-tag">action</span>
-            Summarize and list action items
-          </div>
-        </div>
-        <div class="demo-keys" aria-label="Keyboard shortcuts">
-          <kbd>↑</kbd><kbd>↓</kbd> navigate &nbsp;·&nbsp;
-          <kbd>↵</kbd> insert &nbsp;·&nbsp;
-          <kbd>Ctrl+Space</kbd> browse all
-        </div>
-      </div>
-    </div>
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-tag">
+    <span></span>
+    Early Bird — 30 spots left
   </div>
-</header>
-
-<!-- TRUST BAR -->
-<div class="trustbar" aria-label="Key facts about Prompt Autocomplete">
-  <div class="trustbar-inner">
-    <div class="tb-item">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
-        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      Works on 50+ AI tools
-    </div>
-    <div class="tb-item">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
-        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      Instant setup, no configuration
-    </div>
-    <div class="tb-item">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
-        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      100% local — zero data sent
-    </div>
-    <div class="tb-item">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <circle cx="7" cy="7" r="5.5" stroke="#16a34a" stroke-width="1.4"/>
-        <path d="M4.5 7l2 2 3-3.5" stroke="#16a34a" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      Free plan available forever
-    </div>
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<section class="how-section" id="how-it-works" aria-labelledby="how-title">
-  <div class="wrap">
-    <div class="eyebrow">How it works</div>
-    <h2 id="how-title">Simple by design. Powerful in use.</h2>
-    <p class="lead">No dashboards to manage. No copy-paste workflow. Just type — and your prompts are there.</p>
-
-    <div class="steps" role="list">
-      <article class="step" role="listitem">
-        <div class="step-num">STEP 01</div>
-        <span class="step-icon" aria-hidden="true">💬</span>
-        <h3>Save your prompts</h3>
-        <p>Open the popup and save any prompt you reuse often. Add a tag like "writing" or "email" to group similar ones. Takes five seconds.</p>
-      </article>
-      <article class="step" role="listitem">
-        <div class="step-num">STEP 02</div>
-        <span class="step-icon" aria-hidden="true">⚡</span>
-        <h3>Type in any AI tool</h3>
-        <p>Open any supported AI chatbot or coding assistant. The moment you begin typing, a dropdown of matching saved prompts appears automatically.</p>
-      </article>
-      <article class="step" role="listitem">
-        <div class="step-num">STEP 03</div>
-        <span class="step-icon" aria-hidden="true">✅</span>
-        <h3>Click and go</h3>
-        <p>Select a suggestion with a click or press Enter. The full prompt inserts instantly. Same experience on every AI tool you switch between.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="features-section" id="features" aria-labelledby="feat-title">
-  <div class="wrap">
-    <div class="eyebrow">Features</div>
-    <h2 id="feat-title">Built for people who use AI every day.</h2>
-    <p class="lead">Everything you need to stop wasting time retyping the same prompts over and over.</p>
-
-    <div class="features-grid" role="list">
-      <article class="feat" role="listitem">
-        <div class="feat-icon" aria-hidden="true">🔍</div>
-        <h3>Autocomplete while typing</h3>
-        <p>Fuzzy matching surfaces relevant prompts from the first character. Most-used prompts rank first automatically.</p>
-      </article>
-      <article class="feat" role="listitem">
-        <div class="feat-icon" aria-hidden="true">⌨️</div>
-        <h3>Slash command shortcuts</h3>
-        <p>Type <code>/email</code> or <code>/summary</code> to instantly filter prompts by tag. Fast, keyboard-first workflow for power users.</p>
-      </article>
-      <article class="feat" role="listitem">
-        <div class="feat-icon" aria-hidden="true">🕐</div>
-        <h3>Prompt history navigator</h3>
-        <p>Arrow through prompts you have sent this session — like terminal history, but for AI conversations.</p>
-      </article>
-      <article class="feat" role="listitem">
-        <div class="feat-icon" aria-hidden="true">🌐</div>
-        <h3>Works across every AI tool</h3>
-        <p>Save a prompt once. It shows up on every supported AI chatbot and coding assistant without any extra setup.</p>
-      </article>
-      <article class="feat" role="listitem">
-        <div class="feat-icon" aria-hidden="true">📦</div>
-        <h3>Import and export</h3>
-        <p>Export your entire prompt library to JSON. Import it on any device or share prompt packs with others.</p>
-      </article>
-      <article class="feat" role="listitem">
-        <div class="feat-icon" aria-hidden="true">🔒</div>
-        <h3>Fully local storage</h3>
-        <p>Your prompts live in your browser only. No account, no server, no data ever leaving your machine.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- SITES -->
-<section class="sites-section" aria-labelledby="sites-title">
-  <div class="wrap">
-    <div class="eyebrow" style="display:flex;justify-content:center;">Supported tools</div>
-    <div class="big-number" aria-label="50 plus AI tools">50+</div>
-    <div class="big-label" id="sites-title">AI tools supported out of the box</div>
-
-    <p class="lead" style="margin: 0 auto 44px; text-align:center;">
-      Every major AI chatbot, coding assistant, and image generation tool
-      you open in your browser — one extension covers all of them.
-    </p>
-
-    <div class="sites-grid" role="list" aria-label="Supported AI tools">
-      <span class="site-pill hi" role="listitem">ChatGPT</span>
-      <span class="site-pill hi" role="listitem">Claude</span>
-      <span class="site-pill hi" role="listitem">Gemini</span>
-      <span class="site-pill hi" role="listitem">DeepSeek</span>
-      <span class="site-pill hi" role="listitem">Grok</span>
-      <span class="site-pill hi" role="listitem">Perplexity</span>
-      <span class="site-pill hi" role="listitem">Copilot</span>
-      <span class="site-pill hi" role="listitem">Mistral</span>
-      <span class="site-pill" role="listitem">Meta AI</span>
-      <span class="site-pill" role="listitem">AI Studio</span>
-      <span class="site-pill" role="listitem">NotebookLM</span>
-      <span class="site-pill" role="listitem">Lovable</span>
-      <span class="site-pill" role="listitem">Bolt</span>
-      <span class="site-pill" role="listitem">v0</span>
-      <span class="site-pill" role="listitem">Poe</span>
-      <span class="site-pill" role="listitem">HuggingChat</span>
-      <span class="site-pill" role="listitem">OpenRouter</span>
-      <span class="site-pill" role="listitem">Midjourney</span>
-      <span class="site-pill" role="listitem">Leonardo</span>
-      <span class="site-pill" role="listitem">Ideogram</span>
-      <span class="site-pill" role="listitem">Runway</span>
-      <span class="site-pill" role="listitem">Kling</span>
-      <span class="site-pill" role="listitem">HeyGen</span>
-      <span class="site-pill" role="listitem">InVideo</span>
-      <span class="site-pill" role="listitem">Groq</span>
-      <span class="site-pill" role="listitem">Cohere</span>
-      <span class="site-pill" role="listitem">Firefly</span>
-      <span class="site-pill" role="listitem">CapCut</span>
-      <span class="site-pill" role="listitem">+ 22 more</span>
-    </div>
-    <p class="sites-note">New tools added every update. If yours isn't listed, it likely will be soon.</p>
-  </div>
-</section>
-
-<!-- PRICING -->
-<section class="pricing-section" id="pricing" aria-labelledby="pricing-title">
-  <div class="wrap">
-    <div class="eyebrow" style="display:flex;justify-content:center;">Pricing</div>
-    <h2 id="pricing-title" style="text-align:center;">Simple. One-time. No subscriptions.</h2>
-    <p class="lead" style="text-align:center;margin:0 auto;">Pay once and use it every day. No renewal, no monthly bill, no surprises.</p>
-
-    <div class="pricing-grid">
-      <div class="pricing-card" aria-label="Free plan">
-        <div class="tier-name">Free</div>
-        <div class="price-big">$0</div>
-        <div class="price-note">forever, no card required</div>
-        <ul class="price-features" aria-label="Free plan features">
-          <li><span class="chk" aria-hidden="true">✓</span> Save up to 25 prompts</li>
-          <li><span class="chk" aria-hidden="true">✓</span> All 50+ AI tools supported</li>
-          <li><span class="chk" aria-hidden="true">✓</span> Autocomplete, slash commands, history</li>
-          <li><span class="chk" aria-hidden="true">✓</span> Tags and smart ranking</li>
-          <li><span class="chk" aria-hidden="true">✓</span> No account required</li>
-        </ul>
-        <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
-           class="price-btn free" rel="noopener" aria-label="Install free version">
-          Install Free
-        </a>
-      </div>
-
-      <div class="pricing-card pro" aria-label="Pro plan">
-        <div class="pro-badge">Most Popular</div>
-        <div class="tier-name">Pro</div>
-        <div class="price-big">$6</div>
-        <div class="price-note">one-time payment · price increases soon</div>
-        <ul class="price-features" aria-label="Pro plan features">
-          <li><span class="chk" aria-hidden="true">✓</span> <strong>Unlimited prompts</strong> — no cap ever</li>
-          <li><span class="chk" aria-hidden="true">✓</span> Everything in Free</li>
-          <li><span class="chk" aria-hidden="true">✓</span> License key — works on any device</li>
-          <li><span class="chk" aria-hidden="true">✓</span> Import and export prompt packs</li>
-          <li><span class="chk" aria-hidden="true">✓</span> Priority support</li>
-        </ul>
-        <a href="https://checkout.dodopayments.com/buy/pdt_0NcTg2hCATkECb0P9XqtZ?quantity=1"
-           class="price-btn pro-btn" rel="noopener"
-           aria-label="Buy Pro for 6 dollars, one-time payment">
-          Get Pro — $6 one-time
-        </a>
-      </div>
-    </div>
-    <p class="pricing-footnote">Secure checkout via Dodo Payments · License key delivered by email · No recurring charges</p>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section class="faq-section" id="faq" aria-labelledby="faq-title">
-  <div class="wrap">
-    <div class="eyebrow">FAQ</div>
-    <h2 id="faq-title">Common questions, clear answers.</h2>
-
-    <div class="faq-list">
-      <details>
-        <summary>Which AI tools does Prompt Autocomplete work on?</summary>
-        <div class="faq-ans">Prompt Autocomplete works on 50+ AI tools — every major AI chatbot, coding assistant, and image generation platform available in Chrome. The list covers all the tools most people already use daily, and new ones are added with every release.</div>
-      </details>
-      <details>
-        <summary>Does saving a prompt once make it available on all AI tools?</summary>
-        <div class="faq-ans">Yes. Save a prompt once and it appears in the autocomplete dropdown on every supported AI tool. You do not need to re-save or reconfigure anything when switching between chatbots or assistants.</div>
-      </details>
-      <details>
-        <summary>Where are my prompts stored? Is anything sent to a server?</summary>
-        <div class="faq-ans">Your prompts are stored entirely in your browser using Chrome's local storage API. Nothing is sent to any external server. Pro license activation sends only your license key for a one-time validation — no prompt content ever leaves your device.</div>
-      </details>
-      <details>
-        <summary>What are slash commands and how do they work?</summary>
-        <div class="faq-ans">Slash commands let you filter prompts by tag in any AI input. If you have tagged prompts as "email", type /email and only those prompts appear. It is a fast keyboard shortcut for people who have prompts across multiple categories.</div>
-      </details>
-      <details>
-        <summary>Is the $6 Pro price a subscription?</summary>
-        <div class="faq-ans">No. $6 is a one-time payment. You receive a license key that unlocks unlimited prompts permanently. No monthly billing, no renewal, no account required after activation. The price is planned to increase as more features are added.</div>
-      </details>
-      <details>
-        <summary>What is the prompt history navigator?</summary>
-        <div class="faq-ans">It works like terminal command history. Use the arrow keys in any AI input field to cycle through prompts you have sent during that session. Useful for iterating on variations of the same prompt without retyping it from scratch.</div>
-      </details>
-    </div>
-  </div>
-</section>
-
-<!-- FINAL CTA -->
-<section class="cta-section" aria-labelledby="cta-title">
-  <div class="wrap">
-    <div class="eyebrow">Get started</div>
-    <h2 id="cta-title">Stop retyping.<br />Start in 30 seconds.</h2>
-    <p>Free to install. No account. Works immediately on every AI tool you already use.</p>
-    <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdpe"
-       class="btn-primary" rel="noopener" style="display:inline-flex;"
-       aria-label="Add Prompt Autocomplete to Chrome for free">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M8 2v9M5 8l3 3 3-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M3 13h10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      Add to Chrome — It's Free
+  <h1>Save prompts once.<br><em>Use them everywhere.</em></h1>
+  <p class="hero-sub">Prompt Autocomplete instantly suggests your saved prompts as you type — across ChatGPT, Claude, Gemini, Grok, and 40+ AI tools.</p>
+  <div class="hero-cta-wrap">
+    <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdke" class="btn-main">
+      Get Early Bird Access — $10
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
-    <div class="cta-chips">
-      <div class="cta-chip">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-          <circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/>
-          <path d="M4.5 6.5l1.5 1.5 3-3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        No account needed
+    <span class="hero-price-note">⏳ Price goes up to <strong>$25</strong> soon &nbsp;·&nbsp; One-time payment &nbsp;·&nbsp; Lifetime access</span>
+  </div>
+
+  <!-- Terminal mockup -->
+  <div class="terminal reveal">
+    <div class="terminal-bar">
+      <div class="t-dot r"></div>
+      <div class="t-dot y"></div>
+      <div class="t-dot g"></div>
+      <div class="terminal-url">chatgpt.com</div>
+    </div>
+    <div class="terminal-body">
+      <div class="t-label">// Message ChatGPT</div>
+      <div class="t-input">
+        <span class="t-typing">Write a cold email for</span>
+        <span class="t-cursor"></span>
       </div>
-      <div class="cta-chip">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-          <circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/>
-          <path d="M4.5 6.5l1.5 1.5 3-3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        Works on all 50+ AI tools
+      <div class="t-dropdown">
+        <div class="t-item active">
+          <span class="t-item-text">Write a cold outreach email for [product] targeting [role]…</span>
+          <span class="t-item-tag">email</span>
+        </div>
+        <div class="t-item">
+          <span class="t-item-text">Write a follow-up email after no response for 3 days…</span>
+          <span class="t-item-tag">email</span>
+        </div>
+        <div class="t-item">
+          <span class="t-item-text">Write a product launch announcement email…</span>
+          <span class="t-item-tag">launch</span>
+        </div>
       </div>
-      <div class="cta-chip">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-          <circle cx="6.5" cy="6.5" r="5" stroke="#64748b" stroke-width="1.3"/>
-          <path d="M4.5 6.5l1.5 1.5 3-3" stroke="#64748b" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-        Free tier available forever
+      <div class="t-hint">↑↓ navigate &nbsp;·&nbsp; Enter to insert &nbsp;·&nbsp; Esc to close</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROBLEM ── -->
+<section id="problem">
+  <div class="section-label reveal">01 — The Problem</div>
+  <h2 class="reveal">You're rewriting the same prompts.<br><em>Every. Single. Day.</em></h2>
+  <p class="section-sub reveal">You've figured out what works. But there's nowhere to store it — so you start from scratch each time.</p>
+  <div class="pain-grid reveal">
+    <div class="pain-card">
+      <span class="pain-num">001</span>
+      <div class="pain-title">You forget the perfect prompt</div>
+      <div class="pain-desc">That prompt that got you exactly what you needed last week? Gone. You can't remember how you worded it.</div>
+    </div>
+    <div class="pain-card">
+      <span class="pain-num">002</span>
+      <div class="pain-title">You copy-paste from random docs</div>
+      <div class="pain-desc">Notion, Notes, random text files, browser bookmarks — your prompts are scattered everywhere.</div>
+    </div>
+    <div class="pain-card">
+      <span class="pain-num">003</span>
+      <div class="pain-title">You lose your flow switching tools</div>
+      <div class="pain-desc">ChatGPT today, Claude tomorrow. Your prompts don't follow you across AI tools.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how">
+  <div class="section-label reveal">02 — How It Works</div>
+  <h2 class="reveal">Three steps.<br><em>That's it.</em></h2>
+  <p class="section-sub reveal">No setup. No account. Works the moment you install it.</p>
+  <div class="steps">
+    <div class="step active-step reveal">
+      <div class="step-num">01</div>
+      <div>
+        <div class="step-title">Save any prompt with one click</div>
+        <div class="step-desc">A floating Save button appears next to every AI input box. Type a prompt, click Save. It's stored locally — no cloud, no account.</div>
+        <span class="step-code">// works on any AI site</span>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <div>
+        <div class="step-title">Start typing — prompts appear instantly</div>
+        <div class="step-desc">As soon as you start typing in any AI tool, Prompt Autocomplete shows matching saved prompts in a dropdown. No shortcut needed.</div>
+        <span class="step-code">// or press Ctrl+Space to browse all</span>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <div>
+        <div class="step-title">Press Enter to insert. Done.</div>
+        <div class="step-desc">Select a prompt with arrow keys or click. It inserts instantly into the input. Your prompt is ready to send.</div>
+        <span class="step-code">// saves ~15 seconds per prompt</span>
+      </div>
+    </div>
+  </div>
+  <div class="platforms-wrap reveal">
+    <div class="platforms-label">Works on 40+ AI tools including</div>
+    <div class="platforms">
+      <span class="platform-pill highlight">ChatGPT</span>
+      <span class="platform-pill highlight">Claude</span>
+      <span class="platform-pill highlight">Gemini</span>
+      <span class="platform-pill highlight">Grok</span>
+      <span class="platform-pill highlight">Copilot</span>
+      <span class="platform-pill highlight">DeepSeek</span>
+      <span class="platform-pill highlight">Perplexity</span>
+      <span class="platform-pill highlight">Meta AI</span>
+      <span class="platform-pill">Mistral</span>
+      <span class="platform-pill">AI Studio</span>
+      <span class="platform-pill">NotebookLM</span>
+      <span class="platform-pill">Lovable</span>
+      <span class="platform-pill">Bolt</span>
+      <span class="platform-pill">v0</span>
+      <span class="platform-pill">Cursor</span>
+      <span class="platform-pill">Runway</span>
+      <span class="platform-pill">+ 24 more</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING ── -->
+<section id="pricing">
+  <div class="section-label reveal">03 — Pricing</div>
+  <h2 class="reveal">Simple pricing.<br><em>Pay once. Keep forever.</em></h2>
+  <p class="section-sub reveal">No subscription. No monthly fee. Buy once and it's yours — including all future updates.</p>
+  <div class="pricing-wrap reveal">
+    <div class="pricing-card">
+      <div class="pricing-top">
+        <div class="early-bird-badge">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--amber);display:inline-block"></span>
+          Early Bird Price
+        </div>
+        <div class="price-row">
+          <span class="price-main">$10</span>
+          <span class="price-old">$25</span>
+        </div>
+        <div class="price-type">one-time payment · lifetime access</div>
+        <div class="spots-bar-wrap">
+          <div class="spots-label">
+            <span>Early bird spots used</span>
+            <span style="color:var(--amber)">11 / 30</span>
+          </div>
+          <div class="spots-bar">
+            <div class="spots-fill" style="width:37%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-features">
+        <div class="feature">
+          <div class="feature-check">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          Unlimited prompts saved
+        </div>
+        <div class="feature">
+          <div class="feature-check">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          Works on 40+ AI tools
+        </div>
+        <div class="feature">
+          <div class="feature-check">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          Instant license key delivery via email
+        </div>
+        <div class="feature">
+          <div class="feature-check">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          All future updates included
+        </div>
+        <div class="feature">
+          <div class="feature-check">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          No account. No cloud. 100% local storage
+        </div>
+        <div class="feature">
+          <div class="feature-check">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          Tag filtering, version history, prompt packs
+        </div>
+      </div>
+      <div class="pricing-bottom">
+        <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdke" class="btn-purchase">
+          Get Prompt Autocomplete — $10 →
+        </a>
+        <div class="purchase-note">
+          Price increases to $25 after 30 sales.<br>
+          19 spots remaining at this price.
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer role="contentinfo">
+<!-- ── FOOTER ── -->
+<footer>
   <div class="footer-inner">
-    <div class="footer-logo">Prompt Autocomplete</div>
-    <nav class="footer-links" aria-label="Footer navigation">
-      <a href="#how-it-works">How it works</a>
-      <a href="#features">Features</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
-      <a href="/privacy">Privacy</a>
-    </nav>
-    <div class="footer-copy">© 2026 Prompt Autocomplete</div>
+    <div class="footer-brand">
+      <a href="#" class="footer-logo">
+        <div class="nav-logo-icon" style="width:24px;height:24px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        Prompt Autocomplete
+      </a>
+      <div class="footer-tagline">Built by an indie developer. No subscription. No account needed. Just install and start saving prompts.</div>
+    </div>
+    <div class="footer-links">
+      <a href="https://chromewebstore.google.com/detail/gjcncbhaoclpoopeanbbjeoegllnpdke">Chrome Web Store</a>
+      <a href="#">Privacy Policy</a>
+      <a href="https://tally.so/r/xXQX95">Give Feedback</a>
+      <a href="mailto:hello@promptautocomplete.com">Contact</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Prompt Autocomplete. All rights reserved.</span>
+    <span style="color:var(--muted)">Made with care · Hyderabad, India</span>
   </div>
 </footer>
 
+<script>
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 60);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+</script>
 </body>
 </html>
